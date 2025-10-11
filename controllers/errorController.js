@@ -90,7 +90,6 @@ const sendErrorProd = (err, req, res) => {
 // funckja strzałkowa (arrow function) jest error handling middleware'em
 //GLOBAL ERROR CONTROLLER
 module.exports = (err, req, res, next) => {
-  // console.log(err.stack);
   // default statusCode na wypadek gdyby error nie pochodził od nas
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';

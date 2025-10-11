@@ -96,7 +96,6 @@ reviewSchema.post('save', function () {
 reviewSchema.pre(/^findOneAnd/, async function (next) {
   // findOneAnd to tylko alias na findByIdAndUpdate lub findByIdAndDelete, nawet jak mamy findByIdAndUpdate to prawdziwe zapytanie to findOneAndUpdate
   this.r = await this.findOne(); // r - review
-  // console.log(this.r);
 
   next();
 });
