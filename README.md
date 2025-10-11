@@ -59,7 +59,7 @@ Includes:
 ### Development Tools
 - Dotenv (Loads environment variables from .env file)
 - Parcel Bundler
-- Babel (
+- Babel 
 - Bcrypt.js (Password hashing)
 - Multer (Handling file uploads)
 - Sharp (Image processing and optimization)
@@ -84,7 +84,7 @@ Runs the app in production mode.
 Watches frontend JavaScript files and rebuilds them into /public/js/bundle.js using Parcel.
 
 ### `npm run build:js`
-Builds the frontend assets for production.
+Builds final compressed JavaScript bundle.
 
 ## Acknowledgements
 This project was built while following the “Node.js, Express, MongoDB & More: The Complete Bootcamp” course by Jonas Schmedtmann.
