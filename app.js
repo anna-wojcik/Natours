@@ -17,6 +17,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 
 const app = express(); // express jest funkcją, która wraz z wywołaniem dodaje mnóstwo metod przypisanej zmiennej
 app.enable('trust proxy'); // Wtedy Express ufa nagłówkom proxy takim jak 'x-forwarded-proto' czyli taki nagłówek jest dodawany przez pośrednika (np. Heroku, Render, Nginx, Cloudflare) w trakcie przesyłania żądania do aplikacji
@@ -35,8 +36,8 @@ app.use(cors()); // Access-Control-Allow-Origin * - włącza CORS - Każda domen
 //   }),
 // );
 
-// Przeglądarka wykonuje jako pierwsze non-simple request (np. delete, patch, put). Options to metoda HTTP na którą trzeba odpowiedzieć (np. get, post, delete) app.options = app.get / app.post itd. 
-// Kiedy dostajemy options request to trzeba odesłać taki sam nagłówek Access-Control-Allow-Origin 
+// Przeglądarka wykonuje jako pierwsze non-simple request (np. delete, patch, put). Options to metoda HTTP na którą trzeba odpowiedzieć (np. get, post, delete) app.options = app.get / app.post itd.
+// Kiedy dostajemy options request to trzeba odesłać taki sam nagłówek Access-Control-Allow-Origin
 app.options('*', cors()); // Dla każdego endpointu i każdego originu odpowiadaj pozytywnie na zapytania OPTIONS
 //app.options('/api/v1/tours/:id', cors()); // kiedy otrzymamy request np. delete to można usunąć tylko tour z cross-origin request. Użyteczne, gdy chcesz bardziej restrykcyjnie kontrolować, które API akceptuje CORS
 
@@ -84,6 +85,13 @@ const limiter = rateLimit({
   message: 'Too many request from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);
+
+// umieszczamy to tutaj, bo handler potrzebuje danych w formie surowej 'raw form' czyli jako string a nie jako JSON, dostaniemy te dane ze Stripe. Dodatkowo umieszczamy to przed tym zanim Body parser zmieni dane na JSON
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
 
 // Body parser, reading data from the body into req.body
 app.use(express.json({ limit: '10kb' })); // expres.json() jest wtyczką (middleware), która może modyfikować dane przychodzące od klienta (z requesta)

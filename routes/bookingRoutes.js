@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(authController.protect); // wszystkie poniższe ścieżki będą chronione - wymagane jest zalogowanie
 // tourId - id wycieczki która jest aktualnie rezerwowana
 router
+  // endpoint wywołany z Frontendu
   .route('/checkout-session/:tourId')
   .get(bookingController.getCheckoutSession);
 

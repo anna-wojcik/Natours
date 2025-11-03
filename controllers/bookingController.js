@@ -16,7 +16,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // dane o sesji (session)
     payment_method_types: ['card'], // metody płatności
     // niebezpieczne - ktoś mógłby zabookować bez płacenia
-    success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`, // adres na który klient zostanie przeniesiony po dokonaniu płatności
+    // success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`, // adres na który klient zostanie przeniesiony po dokonaniu płatności
+    success_url: `${req.protocol}://${req.get('host')}/my-tours`,
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`, // adres na który klient zostanie przeniesiony po anulowaniu płatności
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
@@ -62,16 +63,47 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createBookingCheckout = catchAsync(async (req, res, next) => {
-  // This i only TEMPORARY, because it's UNSECURE: everyone can make bookings without paying
-  const { tour, user, price } = req.query;
+// exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+//   // This i only TEMPORARY, because it's UNSECURE: everyone can make bookings without paying
+//   const { tour, user, price } = req.query;
 
-  if (!tour && !user && !price) return next();
+//   if (!tour && !user && !price) return next();
 
+//   await Booking.create({ tour, user, price });
+//   // bez next() bo nie chcemy aby przejść do kolejnego middlewara, który spowoduje wygenerowanie listy wycieczek
+//   res.redirect(req.originalUrl.split('?')[0]); // przejście do strony głównej
+// });
+
+// dodanie booking do bazy dnaych
+const createBookingCheckout = async (session) => {
+  const tour = session.client_reference_id;
+  const user = (await User.findOne({ email: session.customer_email })).id;
+  const price = session.line_items[0].price_data.unit_amount / 100;
   await Booking.create({ tour, user, price });
-  // bez next() bo nie chcemy aby przejść do kolejnego middlewara, który spowoduje wygenerowanie listy wycieczek
-  res.redirect(req.originalUrl.split('?')[0]); // przejście do strony głównej
-});
+};
+
+exports.webhookCheckout = (req, res, next) => {
+  // Kod, który się wykona gdy dojdzie do dokonania płatności
+  const signature = req.headers['stripe-signature'];
+
+  // req.body musi być w surowej formie, nie może być jako JSON
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook error: ${err.message}`);
+  }
+
+  // sprawdzenie czy istnieje event który chcemy, jeżeli istnieje to chcemy dodać booking do bazy danych
+  if (event.type === 'checkout.session.completed')
+    createBookingCheckout(event.data.object); // przesłanie danych o sesji
+
+  res.status(200).json({ received: true }); // response to Stripe
+};
 
 exports.getBooking = factory.getOne(Booking);
 exports.getAllBookings = factory.getAll(Booking);
