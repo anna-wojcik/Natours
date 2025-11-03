@@ -18,6 +18,8 @@ const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 
 const app = express(); // express jest funkcją, która wraz z wywołaniem dodaje mnóstwo metod przypisanej zmiennej
+app.enable('trust proxy'); // Wtedy Express ufa nagłówkom proxy takim jak 'x-forwarded-proto' czyli taki nagłówek jest dodawany przez pośrednika (np. Heroku, Render, Nginx, Cloudflare) w trakcie przesyłania żądania do aplikacji
+
 app.set('view engine', 'pug'); // dodanie templete engine - pug
 app.set('views', path.join(__dirname, 'views')); // nie używamy ./ a nazwy folderu, więc importujemy moduł 'path', który zmanipuluje nazwę ścieżki
 
