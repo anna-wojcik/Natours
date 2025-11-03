@@ -76,7 +76,13 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async (session) => {
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.line_items[0].price_data.unit_amount / 100;
+
+  // Pobieramy line_items z API Stripe, bo Stripe nie wysyła line_items z powrotem w webhooku checkout.session.completed
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+    limit: 1,
+  });
+  const price = lineItems.data[0].price.unit_amount / 100;
+
   await Booking.create({ tour, user, price });
 };
 
