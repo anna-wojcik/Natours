@@ -16,7 +16,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     payment_method_types: ['card'], // metody płatności
     // niebezpieczne - ktoś mógłby zabookować bez płacenia
     // success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`, // adres na który klient zostanie przeniesiony po dokonaniu płatności
-    success_url: `${req.protocol}://${req.get('host')}/my-tours`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`, // adres na który klient zostanie przeniesiony po anulowaniu płatności
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
