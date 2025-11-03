@@ -3,7 +3,6 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
 const User = require('../models/userModel');
 const Booking = require('../models/bookingModel');
-const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -45,7 +44,6 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
-            // images: [`http://www.natours.dev/img/tours/${tour.imageCover}`],
             images: [
               `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
             ],
