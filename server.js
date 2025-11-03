@@ -40,3 +40,11 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
   });
 });
+
+// SIGTERM jest sygnałem, który powoduje że program się wyłącza
+process.on('SIGTERM', () => {
+  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated'); // nie trzeba process.exit(1);, bo dzieje się to automatycznie
+  });
+});
