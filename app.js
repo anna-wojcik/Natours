@@ -8,6 +8,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -24,6 +25,21 @@ app.set('view engine', 'pug'); // dodanie templete engine - pug
 app.set('views', path.join(__dirname, 'views')); // nie używamy ./ a nazwy folderu, więc importujemy moduł 'path', który zmanipuluje nazwę ścieżki
 
 // 1) GLOABL MIDDLEWARES
+// Implement CORS
+app.use(cors()); // Access-Control-Allow-Origin * - włącza CORS - Każda domena może wysyłać zapytania do mojego API
+// ale w produkcji lepiej ograniczyć dostęp tylko do Twojego frontendu (np. natours.com), gdy np. backend jest na domenie api.natours.com:
+// Tylko zapytania pochodzące z https://www.natours.com są dozwolone
+// app.use(
+//   cors({
+//     origin: 'https://wwww.natours.com', // tylko ta domena może wysyłać requesty do API
+//   }),
+// );
+
+// Przeglądarka wykonuje jako pierwsze non-simple request (np. delete, patch, put). Options to metoda HTTP na którą trzeba odpowiedzieć (np. get, post, delete) app.options = app.get / app.post itd. 
+// Kiedy dostajemy options request to trzeba odesłać taki sam nagłówek Access-Control-Allow-Origin 
+app.options('*', cors()); // Dla każdego endpointu i każdego originu odpowiadaj pozytywnie na zapytania OPTIONS
+//app.options('/api/v1/tours/:id', cors()); // kiedy otrzymamy request np. delete to można usunąć tylko tour z cross-origin request. Użyteczne, gdy chcesz bardziej restrykcyjnie kontrolować, które API akceptuje CORS
+
 // Serving static files - dzięki temu pliki z rozszerzeniem pug będą pobierały pliki statyczne (html, css, image) z folderu public
 // app.use(express.static(`${__dirname}/public`));
 app.use(express.static(path.join(__dirname, 'public')));
